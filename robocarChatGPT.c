@@ -74,7 +74,7 @@ void Navig (void *data)
             myrobot.lspeed   = MEDIUM_SPEED;
         }
 
-		if (robo_lightSensor() > 60)                /* it is too bright, I'm photophobia     */
+		if (robo_lightSensor() > 80)                /* it is too bright, I'm photophobia     */
 		{
 			myrobot.rspeed   = -LOW_SPEED;          /* turn right to avoid                   */
             myrobot.lspeed   =  LOW_SPEED;

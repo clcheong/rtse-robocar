@@ -50,8 +50,6 @@ struct robostate
     int prevLeftSpeed;
     int prevRightSpeed;
     int inRoundabout;
-    // int prevSense;
-    // int prev2Sense;
 } myrobot;
 
 int constrain(int value, int lowerBound, int upperBound) {
@@ -122,18 +120,6 @@ void Navig (void *data)
 		// }
 
 
-        // int position = robo_lineSensor();
-
-        // if(myrobot.timer == 250) {
-        //     robo_Honk();
-        //     myrobot.KP = 0.06;
-        // }
-
-        // if(myrobot.timer == 350) {
-        //     robo_Honk();
-        //     myrobot.KP = 0.03;
-        // }
-
         if (myrobot.obstacle == 1) {
             myrobot.lspeed = STOP_SPEED;
             myrobot.rspeed = STOP_SPEED;
@@ -144,22 +130,15 @@ void Navig (void *data)
 
             int sensorValue = robo_lineSensor();
 
-            if (myrobot.inRoundabout == 1) {
-                // myrobot.lspeed = LOW_SPEED;
-                // myrobot.rspeed = LOW_SPEED;
-                myrobot.KP = 1.2;
-            } else {
-                myrobot.KP = 0.03;
-            }
+            // if (myrobot.inRoundabout == 1) {
+            //     myrobot.lspeed = LOW_SPEED;
+            //     myrobot.rspeed = LOW_SPEED;
+            //     myrobot.KP = 1.2;
+            // } else {
+            //     myrobot.KP = 0.03;
+            // }
 
             if(sensorValue == 0) {
-                // myrobot.lspeed = - 50 - (myrobot.integral * myrobot.KI * 20);
-                // myrobot.rspeed = - 50 + (myrobot.integral * myrobot.KI * 20);
-                // if(myrobot.prev2Sense == 2 && myrobot.prevSense == 7) {
-                //     robo_Honk();
-                //     robo_LED_toggle();
-                //     myrobot.inRoundabout = 1;
-                // }
 
                 myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
                 myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
@@ -167,7 +146,6 @@ void Navig (void *data)
 
                 myrobot.KI = 0.0008; // 0.0008
             } else {
-                // myrobot.KP = 0.045; 
 
                 switch (sensorValue) {
                     case 2: sense = 1000;
@@ -217,8 +195,7 @@ void Navig (void *data)
 
                 myrobot.prevLeftSpeed = myrobot.lspeed;
                 myrobot.prevRightSpeed = myrobot.rspeed;
-                // myrobot.prev2Sense = myrobot.prevSense;
-                // myrobot.prevSense = sensorValue;
+
             }
 
             OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 500 ms                  */
@@ -253,7 +230,7 @@ void TaskStart( void *data )
     while(1)
     {
         OSTimeDlyHMSM(0, 0, 5, 0);                          /* Task period ~ 5 secs          */
-       // robo_LED_toggle();                                  /* Show that we are alive        */
+        robo_LED_toggle();                                  /* Show that we are alive        */
     }
 
 }
@@ -273,12 +250,9 @@ int main( void )
     myrobot.KI = 0.0005; //0.0004
     myrobot.lastError = 0.0;
     myrobot.integral = 0.0;
-    // myrobot.timer = 0;
     myrobot.prevLeftSpeed = 0;
     myrobot.prevRightSpeed = 0;
     myrobot.inRoundabout = 0;
-    // myrobot.prevSense = 0;
-    // myrobot.prev2Sense = 0;
     myrobot.goal = 1000;                                      /* goal is to follow on the middle sensor */
 
     OSTaskCreate(TaskStart,                                /* create TaskStart Task          */

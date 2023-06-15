@@ -27,6 +27,11 @@
 #define TASK_CTRLMOTOR_PRIO      3
 #define TASK_NAVIG_PRIO          4          /* Lowest priority                          */
 
+#define DEFAULT_MOTOR_SPEED     50
+#define DEFAULT_KP             0.06 // 0.06
+#define DEFAULT_KD             0.042 // 0.042
+#define DEFAULT_KI             0.00002 // 0.00002
+
 OS_STK TaskStartStk[TASK_STK_SZ];           /* TaskStartTask stack                      */
 OS_STK ChkCollideStk[TASK_STK_SZ];          /* Task StopOnCollide stack                 */
 OS_STK CtrlmotorStk[TASK_STK_SZ];           /* Task CtrlMotors stack                    */
@@ -50,6 +55,7 @@ struct robostate
     int prevLeftSpeed;
     int prevRightSpeed;
     int inRoundabout;
+    int turn;
 } myrobot;
 
 int constrain(int value, int lowerBound, int upperBound) {
@@ -64,6 +70,49 @@ int constrain(int value, int lowerBound, int upperBound) {
     }
 }
 
+int absoluteValue(int num) {
+    if (num < 0)
+        return -num;
+    else
+        return num;
+}
+
+void pidControl(int sense) {
+
+    int motorSpeed = DEFAULT_MOTOR_SPEED;
+
+    if (myrobot.inRoundabout == 1) {
+        motorSpeed = 40;
+        myrobot.KP = DEFAULT_KP * 1.3;
+    } else {
+        motorSpeed = DEFAULT_MOTOR_SPEED;
+        myrobot.KP = DEFAULT_KP; 
+    }
+
+    int error = myrobot.goal - sense;
+
+    myrobot.integral = myrobot.integral + error;
+
+    if(absoluteValue(myrobot.integral) > 28000){
+        robo_LED_toggle();
+        myrobot.turn += 1;
+    }
+
+
+    // Calculate motor adjustments
+    int adjustment = (myrobot.KP * error) + (myrobot.KI * (myrobot.integral)) + (myrobot.KD * (error - myrobot.lastError));
+
+    // Store error for the next iteration
+    myrobot.lastError = error;
+
+    // Adjust motors
+    myrobot.lspeed = constrain((motorSpeed - adjustment), -100 , 100);
+    myrobot.rspeed = constrain((motorSpeed + adjustment), -100 , 100);
+    
+
+    myrobot.prevLeftSpeed = myrobot.lspeed;
+    myrobot.prevRightSpeed = myrobot.rspeed;
+}
 
 /*------High pririority task----------*/
 void CheckCollision (void *data)
@@ -125,26 +174,49 @@ void Navig (void *data)
             myrobot.rspeed = STOP_SPEED;
         } else {
 
-
             int sense = myrobot.goal;
 
             int sensorValue = robo_lineSensor();
 
-            // if (myrobot.inRoundabout == 1) {
-            //     myrobot.lspeed = LOW_SPEED;
-            //     myrobot.rspeed = LOW_SPEED;
-            //     myrobot.KP = 1.2;
-            // } else {
-            //     myrobot.KP = 0.03;
-            // }
+            if(sensorValue == 100) {
+            // if(sensorValue == 0) {
 
-            if(sensorValue == 0) {
+                // switch(myrobot.turn) {
+                    // case 1: sense = -2000; // 90 degrees turn 1 (left)
+                    //         break;
+                    
+                    // case 2: sense = 4000;  // 90 degrees turn 2 (right)
+                    //         break;
 
-                myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
-                myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
+                    // case 3: sense = 4000;  // 90 degrees turn 3 (turn right on roundabout entrance)
+                    //         myrobot.inRoundabout = 1;
+                    //         break;
 
+                    // case 4: sense = 4000;  // 90 degrees turn 4 (turn right after exited from roundabout)
+                    //         myrobot.inRoundabout = 0;
+                    //         break;
 
-                myrobot.KI = 0.0008; // 0.0008
+                    // case 5: sense = -2000; // 90 degrees turn 5 (turn left towards zebra road)
+                    //         break;
+                    
+                    // case 6: sense = -2000; // 90 degrees turn 6 (turn left after zebra road)
+                    //         break;
+
+                    // case 7: sense = -2000; // 90 degrees turn 7 (turn right if failed to turn towards obstacle route after exiting from zebra section)
+                    //         break;
+
+                    // default: myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
+                    //          myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
+                    //          break;
+                // }
+
+                // if(myrobot.turn >= 1 && myrobot.turn <= 7) {
+                    // pidControl(sense);
+                // }
+
+                // myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
+                // myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
+
             } else {
 
                 switch (sensorValue) {
@@ -169,32 +241,26 @@ void Navig (void *data)
                     case 7: sense = 1000;
                             break;
 
+                    case 0: sense = 2500;
+                            break;
+                            // if(myrobot.turn == 1){
+                            //     // myrobot.inRoundabout = 1;
+                            //     sense = -500;
+                            // }
+                            // // else if(myrobot.turn == 4){
+                            // //     myrobot.inRoundabout = 0;
+                            // //     sense = 4000;
+                            // // }
+                            // else {
+                            //     sense = -2000;
+                            // }
+                            // break;
+
                     default: sense = 1000;
                             break;
                 }
 
-
-                // Calculate error
-
-                int error = myrobot.goal - sense;
-
-                myrobot.integral = myrobot.integral + error;
-
-
-                // Calculate motor adjustments
-                int adjustment = (myrobot.KP * error) + (myrobot.KI * (myrobot.integral)) + (myrobot.KD * (error - myrobot.lastError));
-                // int adjustment = (myrobot.KP * error) + (myrobot.KD * (error - myrobot.lastError));
-
-                // Store error for the next iteration
-                myrobot.lastError = error;
-
-                // Adjust motors
-                myrobot.lspeed = constrain((60 - adjustment), -100 , 100);
-                myrobot.rspeed = constrain((60 + adjustment), -100 , 100);
-                
-
-                myrobot.prevLeftSpeed = myrobot.lspeed;
-                myrobot.prevRightSpeed = myrobot.rspeed;
+                pidControl(sense);
 
             }
 
@@ -230,7 +296,7 @@ void TaskStart( void *data )
     while(1)
     {
         OSTimeDlyHMSM(0, 0, 5, 0);                          /* Task period ~ 5 secs          */
-        robo_LED_toggle();                                  /* Show that we are alive        */
+        // robo_LED_toggle();                                  /* Show that we are alive        */
     }
 
 }
@@ -244,15 +310,15 @@ int main( void )
     myrobot.rspeed   = STOP_SPEED;                         /* Initialize myrobot states      */
     myrobot.lspeed   = STOP_SPEED;
     myrobot.obstacle = 0;                                  /*  No collisioin                 */
-    // myrobot.flag = false;
-    myrobot.KP = 0.03; //0,03
-    myrobot.KD = 0.4; //0.07
-    myrobot.KI = 0.0005; //0.0004
+    myrobot.KP = DEFAULT_KP; //0.03
+    myrobot.KD = DEFAULT_KD; //0.07
+    myrobot.KI = DEFAULT_KI; //0.0004
     myrobot.lastError = 0.0;
     myrobot.integral = 0.0;
     myrobot.prevLeftSpeed = 0;
     myrobot.prevRightSpeed = 0;
     myrobot.inRoundabout = 0;
+    myrobot.turn = 1;
     myrobot.goal = 1000;                                      /* goal is to follow on the middle sensor */
 
     OSTaskCreate(TaskStart,                                /* create TaskStart Task          */

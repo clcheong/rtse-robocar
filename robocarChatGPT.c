@@ -27,10 +27,10 @@
 #define TASK_CTRLMOTOR_PRIO      3
 #define TASK_NAVIG_PRIO          4          /* Lowest priority                          */
 
-#define DEFAULT_MOTOR_SPEED     50
-#define DEFAULT_KP             0.06 // 0.06
-#define DEFAULT_KD             0.042 // 0.042
-#define DEFAULT_KI             0.00002 // 0.00002
+#define DEFAULT_MOTOR_SPEED    40
+#define DEFAULT_KP             0.075 // 0.06
+#define DEFAULT_KD             0.0075 // 0.042
+#define DEFAULT_KI             0.0 // 0.00002
 
 OS_STK TaskStartStk[TASK_STK_SZ];           /* TaskStartTask stack                      */
 OS_STK ChkCollideStk[TASK_STK_SZ];          /* Task StopOnCollide stack                 */
@@ -216,6 +216,9 @@ void Navig (void *data)
 
                 // myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
                 // myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
+                
+                //myrobot.lspeed = - 40;
+               // myrobot.rspeed = - 30;
 
             } else {
 
@@ -240,9 +243,12 @@ void Navig (void *data)
                     
                     case 7: sense = 1000;
                             break;
-
-                    case 0: sense = 2500;
+                    case 0:
+                            sense = 0;
                             break;
+
+                    // case 0: sense = 2500;
+                    //         break;
                             // if(myrobot.turn == 1){
                             //     // myrobot.inRoundabout = 1;
                             //     sense = -500;
@@ -256,8 +262,12 @@ void Navig (void *data)
                             // }
                             // break;
 
-                    default: sense = 1000;
-                            break;
+                    // default: sense = 1000;
+                    //         break;                    
+                    
+                    default: myrobot.lspeed = -30;
+                             myrobot.rspeed = -30;
+                             break;
                 }
 
                 pidControl(sense);

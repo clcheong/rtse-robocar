@@ -27,10 +27,10 @@
 #define TASK_CTRLMOTOR_PRIO      3
 #define TASK_NAVIG_PRIO          4          /* Lowest priority                          */
 
-#define DEFAULT_MOTOR_SPEED    40
-#define DEFAULT_KP             0.075 // 0.06
-#define DEFAULT_KD             0.0075 // 0.042
-#define DEFAULT_KI             0.0 // 0.00002
+#define DEFAULT_MOTOR_SPEED    25
+#define DEFAULT_KP             0.052 // 0.06 // TUNE HERE
+#define DEFAULT_KD             0.042 // 0.042 TUNE HERE
+#define DEFAULT_KI             0.00002 // 0.00002 TUNE HERE
 
 OS_STK TaskStartStk[TASK_STK_SZ];           /* TaskStartTask stack                      */
 OS_STK ChkCollideStk[TASK_STK_SZ];          /* Task StopOnCollide stack                 */
@@ -55,6 +55,9 @@ struct robostate
     int prevLeftSpeed;
     int prevRightSpeed;
     int inRoundabout;
+    int clickCount;
+    int inLightField;
+    int inBlackBox;
     int turn;
 } myrobot;
 
@@ -81,22 +84,28 @@ void pidControl(int sense) {
 
     int motorSpeed = DEFAULT_MOTOR_SPEED;
 
-    if (myrobot.inRoundabout == 1) {
-        motorSpeed = 40;
-        myrobot.KP = DEFAULT_KP * 1.3;
-    } else {
-        motorSpeed = DEFAULT_MOTOR_SPEED;
-        myrobot.KP = DEFAULT_KP; 
+    if (myrobot.inLightField == 1) {
+        myrobot.KP = 0.065;
+        motorSpeed = 25;                // TUNE HERE
     }
+
+
+    // if (myrobot.inRoundabout == 1) {
+    //     motorSpeed = 30;
+    //     myrobot.KP = DEFAULT_KP * 1.3;
+    // } else {
+    //     motorSpeed = DEFAULT_MOTOR_SPEED;
+    //     myrobot.KP = DEFAULT_KP; 
+    // }
 
     int error = myrobot.goal - sense;
 
     myrobot.integral = myrobot.integral + error;
 
-    if(absoluteValue(myrobot.integral) > 28000){
-        robo_LED_toggle();
-        myrobot.turn += 1;
-    }
+    // if(absoluteValue(myrobot.integral) > 28000){
+    //     robo_LED_toggle();
+    //     myrobot.turn += 1;
+    // }
 
 
     // Calculate motor adjustments
@@ -139,7 +148,7 @@ void CntrlMotors (void *data)
         speed_r = myrobot.rspeed;
         speed_l = myrobot.lspeed;
         robo_motorSpeed(speed_l, speed_r);
-        OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 250 ms              */
+        OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 250 ms              */
     }
 }
 
@@ -149,6 +158,9 @@ void CntrlMotors (void *data)
 
 void Navig (void *data)
 {
+    
+
+    int pressCount = 0;
     for (;;)
     {
         // if (myrobot.obstacle == 1)                  /* If blocked then reverse              */
@@ -168,59 +180,68 @@ void Navig (void *data)
         //     myrobot.lspeed   =  LOW_SPEED;
 		// }
 
+        int lightSense = robo_lightSensor();
 
-        if (myrobot.obstacle == 1) {
-            myrobot.lspeed = STOP_SPEED;
-            myrobot.rspeed = STOP_SPEED;
+        if(robo_goPressed() != NULL){
+
+            while(robo_goPressed() != NULL);
+
+            pressCount++;
+            if (pressCount >= 5){
+                myrobot.inBlackBox = 1;
+            } else {
+                if (myrobot.inRoundabout == 0 && myrobot.inBlackBox == 0) {
+                    myrobot.inRoundabout = 1;
+                } else {
+                    myrobot.inRoundabout = 0;
+                }
+            }
+
+            if(myrobot.inBlackBox == 1){
+                robo_Honk();
+            }
+            
+            if (myrobot.inBlackBox == 0) {
+                robo_LED_toggle();
+            }
+
+        }
+
+
+        if (myrobot.obstacle == 1 && myrobot.inLightField == 1) {
+            myrobot.lspeed = 0;
+            myrobot.rspeed = 0;
+        } else if (myrobot.obstacle == 1) {
+            myrobot.inLightField = 0;
+            myrobot.inRoundabout = 0;
+            myrobot.lspeed = 30;
+            myrobot.rspeed = -30;
+            OSTimeDlyHMSM(0, 0, 0, 800); // TUNE HERE
+
+            myrobot.lspeed = 60;
+            myrobot.rspeed = 60;
+            OSTimeDlyHMSM(0, 0, 1, 800); // TUNE HERE
+
+        } else if (lightSense >= 85 && myrobot.inLightField == 0) {
+            myrobot.inRoundabout = 0;
+            myrobot.inLightField = 1;
+            myrobot.lspeed = 30;
+            myrobot.rspeed = 30;
+            OSTimeDlyHMSM(0, 0, 0, 600); // TUNE HERE
+
+            myrobot.lspeed = -65;
+            myrobot.rspeed = 65;
+            OSTimeDlyHMSM(0, 0, 0, 200); // TUNE HERE
         } else {
 
             int sense = myrobot.goal;
 
             int sensorValue = robo_lineSensor();
 
-            if(sensorValue == 100) {
-            // if(sensorValue == 0) {
+            // if(sensorValue == 100) {
+            if(myrobot.inRoundabout == 1) {
 
-                // switch(myrobot.turn) {
-                    // case 1: sense = -2000; // 90 degrees turn 1 (left)
-                    //         break;
-                    
-                    // case 2: sense = 4000;  // 90 degrees turn 2 (right)
-                    //         break;
-
-                    // case 3: sense = 4000;  // 90 degrees turn 3 (turn right on roundabout entrance)
-                    //         myrobot.inRoundabout = 1;
-                    //         break;
-
-                    // case 4: sense = 4000;  // 90 degrees turn 4 (turn right after exited from roundabout)
-                    //         myrobot.inRoundabout = 0;
-                    //         break;
-
-                    // case 5: sense = -2000; // 90 degrees turn 5 (turn left towards zebra road)
-                    //         break;
-                    
-                    // case 6: sense = -2000; // 90 degrees turn 6 (turn left after zebra road)
-                    //         break;
-
-                    // case 7: sense = -2000; // 90 degrees turn 7 (turn right if failed to turn towards obstacle route after exiting from zebra section)
-                    //         break;
-
-                    // default: myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
-                    //          myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
-                    //          break;
-                // }
-
-                // if(myrobot.turn >= 1 && myrobot.turn <= 7) {
-                    // pidControl(sense);
-                // }
-
-                // myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
-                // myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
-                
-                //myrobot.lspeed = - 40;
-               // myrobot.rspeed = - 30;
-
-            } else {
+                // roundabout mode
 
                 switch (sensorValue) {
                     case 2: sense = 1000;
@@ -241,10 +262,10 @@ void Navig (void *data)
                     case 6: sense = 500;
                             break;
                     
-                    case 7: sense = 1000;
+                    case 7: sense = 2000;
                             break;
                     case 0:
-                            sense = 0;
+                            sense = 2000;
                             break;
 
                     // case 0: sense = 2500;
@@ -272,9 +293,150 @@ void Navig (void *data)
 
                 pidControl(sense);
 
+
+                // myrobot.lspeed = - (myrobot.prevRightSpeed * 1.1);
+                // myrobot.rspeed = - (myrobot.prevLeftSpeed * 1.1);
+                
+                //myrobot.lspeed = - 40;
+               // myrobot.rspeed = - 30;
+
+            } else if (myrobot.inLightField == 1) {
+
+                // light field mode
+
+                robo_LED_toggle();
+
+                switch (sensorValue) {
+                    case 2: sense = 1000;
+                            break;
+                    
+                    case 1: sense = 2000;
+                            break;
+
+                    case 3: sense = 2500;
+                            break;
+
+                    case 4: sense = 0;
+                            break;
+
+                    case 5: sense = 1000;
+                            break;
+
+                    case 6: sense = -500;
+                            break;
+                    
+                    case 7: sense = 1000;
+                            break;
+                    case 0:
+                            sense = 1000;
+                            break;               
+                    
+                    default: myrobot.lspeed = -30;
+                             myrobot.rspeed = -30;
+                             break;
+                }
+
+                pidControl(sense);
+
+            } else if (myrobot.inBlackBox == 1) {
+
+                switch (sensorValue) {
+                    case 2: myrobot.lspeed = 50;
+                            myrobot.rspeed = 50;
+                            break;
+                    
+                    case 1: myrobot.lspeed = 45;
+                            myrobot.rspeed = - 35;
+                            break;
+
+                    case 3: myrobot.lspeed = 65;
+                            myrobot.rspeed = - 35;
+                            break;
+
+                    case 4: myrobot.lspeed = - 35;
+                            myrobot.rspeed = 45;
+                            break;
+
+                    case 5: myrobot.lspeed = 75;
+                            myrobot.rspeed = 75;
+                            break;
+
+                    case 6: myrobot.lspeed = - 35;
+                            myrobot.rspeed = 65;
+                            break;
+                    
+                    case 7: myrobot.lspeed = 65;
+                            myrobot.rspeed = 75;
+                            break;
+
+                    case 0: myrobot.lspeed = 30;
+                            myrobot.rspeed = 60;
+                            // myrobot.lspeed = - ((myrobot.prevRightSpeed+10) * 0.6);
+                            // myrobot.rspeed = - (myrobot.prevLeftSpeed * 0.6);
+                            break;                 
+                    
+                    default: myrobot.lspeed = -30;
+                                myrobot.rspeed = -30;
+                                break;
+                }
+
+                if(sensorValue != 0) {
+                    myrobot.prevLeftSpeed = myrobot.lspeed;
+                    myrobot.prevRightSpeed = myrobot.rspeed;
+                }
+
+            } else {
+
+                // normal mode
+                switch (sensorValue) {
+                    case 2: myrobot.lspeed = 50;
+                            myrobot.rspeed = 50;
+                            break;
+                    
+                    case 1: myrobot.lspeed = 45;
+                            myrobot.rspeed = - 35;
+                            break;
+
+                    case 3: myrobot.lspeed = 65;
+                            myrobot.rspeed = - 35;
+                            break;
+
+                    case 4: myrobot.lspeed = - 35;
+                            myrobot.rspeed = 45;
+                            break;
+
+                    case 5: myrobot.lspeed = - 65;
+                            myrobot.rspeed = 65;
+                            break;
+
+                    case 6: myrobot.lspeed = - 35;
+                            myrobot.rspeed = 65;
+                            break;
+                    
+                    case 7: myrobot.lspeed = 65;
+                            myrobot.rspeed = - 65;
+                            break;
+
+                    case 0: //myrobot.lspeed = - 50;
+                            //myrobot.rspeed = - 30;
+                            myrobot.lspeed = - ((myrobot.prevRightSpeed+10) * 0.6);
+                            myrobot.rspeed = - (myrobot.prevLeftSpeed * 0.6);
+                            break;                 
+                    
+                    default: myrobot.lspeed = -30;
+                             myrobot.rspeed = -30;
+                             break;
+                }
+
+                if(sensorValue != 0) {
+                    myrobot.prevLeftSpeed = myrobot.lspeed;
+                    myrobot.prevRightSpeed = myrobot.rspeed;
+                }
+
+
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 500 ms                  */
+            OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 500 ms                  */
         }
 
         
@@ -328,6 +490,9 @@ int main( void )
     myrobot.prevLeftSpeed = 0;
     myrobot.prevRightSpeed = 0;
     myrobot.inRoundabout = 0;
+    myrobot.clickCount = 0;
+    myrobot.inLightField = 0;
+    myrobot.inBlackBox = 0;
     myrobot.turn = 1;
     myrobot.goal = 1000;                                      /* goal is to follow on the middle sensor */
 

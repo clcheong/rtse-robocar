@@ -163,6 +163,9 @@ void Navig (void *data)
     int pressCount = 0;
     for (;;)
     {
+
+        cprintf("Navigate\n");
+
         // if (myrobot.obstacle == 1)                  /* If blocked then reverse              */
         // {
         //     myrobot.rspeed   = -LOW_SPEED;          /* REVERSE */
@@ -212,6 +215,9 @@ void Navig (void *data)
             myrobot.lspeed = 0;
             myrobot.rspeed = 0;
         } else if (myrobot.obstacle == 1) {
+
+            cprintf("Obstacle Detected\n");
+
             myrobot.inLightField = 0;
             myrobot.inRoundabout = 0;
             myrobot.lspeed = 30;
@@ -223,6 +229,9 @@ void Navig (void *data)
             OSTimeDlyHMSM(0, 0, 1, 800); // TUNE HERE
 
         } else if (lightSense >= 85 && myrobot.inLightField == 0) {
+
+            cprintf("Light Detected\n");
+
             myrobot.inRoundabout = 0;
             myrobot.inLightField = 1;
             myrobot.lspeed = 30;

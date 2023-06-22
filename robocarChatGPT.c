@@ -24,8 +24,8 @@
 #define TASK_STK_SZ            128          /* Size of each task's stacks (# of bytes)  */
 #define TASK_START_PRIO          1          /* Highest priority                         */
 #define TASK_CHKCOLLIDE_PRIO     2
-#define TASK_CTRLMOTOR_PRIO      2
-#define TASK_NAVIG_PRIO          2          /* Lowest priority                          */
+#define TASK_CTRLMOTOR_PRIO      3
+#define TASK_NAVIG_PRIO          4          /* Lowest priority                          */
 
 #define DEFAULT_MOTOR_SPEED    25
 #define DEFAULT_KP             0.052 // 0.06 // TUNE HERE
@@ -136,7 +136,7 @@ void CheckCollision (void *data)
         else
             myrobot.obstacle = 0;                   /* signal no obstacle                */
 
-		OSTimeDlyHMSM(0, 0, 0, 15);                /* Task period ~ 100 ms              */
+		OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 100 ms              */
     }
 }
 
@@ -147,10 +147,10 @@ void CntrlMotors (void *data)
 
     for(;;)
     {
-        speed_r = myrobot.rspeed;
-        speed_l = myrobot.lspeed;
+        speed_r = - myrobot.rspeed;
+        speed_l = - myrobot.lspeed;
         robo_motorSpeed(speed_l, speed_r);
-        OSTimeDlyHMSM(0, 0, 0, 20);                /* Task period ~ 250 ms              */
+        OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 250 ms              */
     }
 }
 
@@ -445,7 +445,7 @@ void Navig (void *data)
 
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 25);                /* Task period ~ 500 ms                  */
+            OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 500 ms                  */
         }
 
         

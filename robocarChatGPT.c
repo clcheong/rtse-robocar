@@ -136,7 +136,7 @@ void CheckCollision (void *data)
         else
             myrobot.obstacle = 0;                   /* signal no obstacle                */
 
-		OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 100 ms              */
+		OSTimeDlyHMSM(0, 0, 0, 1);                /* Task period ~ 100 ms              */
     }
 }
 
@@ -147,10 +147,13 @@ void CntrlMotors (void *data)
 
     for(;;)
     {
+
+        cprintf("Ctrl Motors\n");
+
         speed_r = - myrobot.rspeed;
         speed_l = - myrobot.lspeed;
         robo_motorSpeed(speed_l, speed_r);
-        OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 250 ms              */
+        OSTimeDlyHMSM(0, 0, 0, 1);                /* Task period ~ 250 ms              */
     }
 }
 
@@ -445,7 +448,7 @@ void Navig (void *data)
 
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 10);                /* Task period ~ 500 ms                  */
+            OSTimeDlyHMSM(0, 0, 0, 1);                /* Task period ~ 500 ms                  */
         }
 
         

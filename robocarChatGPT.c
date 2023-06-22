@@ -129,8 +129,10 @@ void CheckCollision (void *data)
     for(;;)
     {
         // myrobot.timer++;
-        if ( (robo_proxSensor() == 1) )             /* obstacle?                         */
-            myrobot.obstacle = 1;                   /* signal obstacle present           */
+        if ( (robo_proxSensor() == 1) ){             /* obstacle?                         */
+            cprintf("Obstacle Detected\n");
+            myrobot.obstacle = 1;  
+        }                                           /* signal obstacle present           */
         else
             myrobot.obstacle = 0;                   /* signal no obstacle                */
 
@@ -215,8 +217,6 @@ void Navig (void *data)
             myrobot.lspeed = 0;
             myrobot.rspeed = 0;
         } else if (myrobot.obstacle == 1) {
-
-            cprintf("Obstacle Detected\n");
 
             myrobot.inLightField = 0;
             myrobot.inRoundabout = 0;
@@ -457,6 +457,8 @@ void Navig (void *data)
 /* Create all other tasks here           */
 void TaskStart( void *data )
 {
+    cprintf("Task Start\n");
+
     OS_ticks_init();                                        /* enable RTOS timer tick        */
 
     OSTaskCreate(CheckCollision,                            /* Task function                 */

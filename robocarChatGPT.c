@@ -24,8 +24,8 @@
 #define TASK_STK_SZ            128          /* Size of each task's stacks (# of bytes)  */
 #define TASK_START_PRIO          1          /* Highest priority                         */
 #define TASK_CHKCOLLIDE_PRIO     2
-#define TASK_CTRLMOTOR_PRIO      3
-#define TASK_NAVIG_PRIO          4          /* Lowest priority                          */
+#define TASK_CTRLMOTOR_PRIO      2
+#define TASK_NAVIG_PRIO          2          /* Lowest priority                          */
 
 #define DEFAULT_MOTOR_SPEED    25
 #define DEFAULT_KP             0.052 // 0.06 // TUNE HERE
@@ -136,7 +136,7 @@ void CheckCollision (void *data)
         else
             myrobot.obstacle = 0;                   /* signal no obstacle                */
 
-		OSTimeDlyHMSM(0, 0, 0, 100);                /* Task period ~ 100 ms              */
+		OSTimeDlyHMSM(0, 0, 0, 15);                /* Task period ~ 100 ms              */
     }
 }
 
@@ -150,7 +150,7 @@ void CntrlMotors (void *data)
         speed_r = myrobot.rspeed;
         speed_l = myrobot.lspeed;
         robo_motorSpeed(speed_l, speed_r);
-        OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 250 ms              */
+        OSTimeDlyHMSM(0, 0, 0, 20);                /* Task period ~ 250 ms              */
     }
 }
 
@@ -445,7 +445,7 @@ void Navig (void *data)
 
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 500 ms                  */
+            OSTimeDlyHMSM(0, 0, 0, 25);                /* Task period ~ 500 ms                  */
         }
 
         
@@ -461,6 +461,11 @@ void TaskStart( void *data )
 
     OS_ticks_init();                                        /* enable RTOS timer tick        */
 
+    OSTaskCreate(Navig,                                     /* Task function                 */
+                (void *)0,                                  /* nothing passed to task        */
+                (void *)&NavigStk[TASK_STK_SZ - 1],         /* stack allocated to task       */
+                TASK_NAVIG_PRIO);                           /* priority of task              */
+
     OSTaskCreate(CheckCollision,                            /* Task function                 */
                 (void *)0,                                  /* nothing passed to task        */
                 (void *)&ChkCollideStk[TASK_STK_SZ - 1],    /* stack allocated to task       */
@@ -471,10 +476,7 @@ void TaskStart( void *data )
                 (void *)&CtrlmotorStk[TASK_STK_SZ - 1],     /* stack allocated to task       */
                 TASK_CTRLMOTOR_PRIO);                       /* priority of task              */
 
-    OSTaskCreate(Navig,                                     /* Task function                 */
-                (void *)0,                                  /* nothing passed to task        */
-                (void *)&NavigStk[TASK_STK_SZ - 1],         /* stack allocated to task       */
-                TASK_NAVIG_PRIO);                           /* priority of task              */
+
 
     while(1)
     {

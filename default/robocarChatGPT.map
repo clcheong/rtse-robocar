@@ -785,20 +785,20 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x17b9
+.debug_info     0x00000000     0x17b8
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x5f4 c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/../../../../avr/lib/avr5/crtatmega328p.o
- .debug_info    0x000005f4      0xaa9 robocarChatGPT.o
- .debug_info    0x0000109d       0x89 C:\RTprog2023\obj\kernel.o
- .debug_info    0x00001126       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_udivmodhi4.o)
- .debug_info    0x000011e1       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_divmodhi4.o)
- .debug_info    0x0000129c       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_udivmodsi4.o)
- .debug_info    0x00001357       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_exit.o)
- .debug_info    0x00001412       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_tablejump2.o)
- .debug_info    0x000014cd       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_copy_data.o)
- .debug_info    0x00001588       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_clear_bss.o)
- .debug_info    0x00001643       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_umulhisi3.o)
- .debug_info    0x000016fe       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_muluhisi3.o)
+ .debug_info    0x000005f4      0xaa8 robocarChatGPT.o
+ .debug_info    0x0000109c       0x89 C:\RTprog2023\obj\kernel.o
+ .debug_info    0x00001125       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_udivmodhi4.o)
+ .debug_info    0x000011e0       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_divmodhi4.o)
+ .debug_info    0x0000129b       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_udivmodsi4.o)
+ .debug_info    0x00001356       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_exit.o)
+ .debug_info    0x00001411       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_tablejump2.o)
+ .debug_info    0x000014cc       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_copy_data.o)
+ .debug_info    0x00001587       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_clear_bss.o)
+ .debug_info    0x00001642       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_umulhisi3.o)
+ .debug_info    0x000016fd       0xbb c:/arduino-1.8.19/hardware/tools/avr/bin/../lib/gcc/avr/7.3.0/avr5\libgcc.a(_muluhisi3.o)
 
 .debug_abbrev   0x00000000      0x918
  *(.debug_abbrev)

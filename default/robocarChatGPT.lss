@@ -17,11 +17,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   6 .debug_aranges 00000168  00000000  00000000  00001d28  2**3
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_info   000017b9  00000000  00000000  00001e90  2**0
+  7 .debug_info   000017b8  00000000  00000000  00001e90  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_abbrev 00000918  00000000  00000000  00003649  2**0
+  8 .debug_abbrev 00000918  00000000  00000000  00003648  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_line   00000d0a  00000000  00000000  00003f61  2**0
+  9 .debug_line   00000d0a  00000000  00000000  00003f60  2**0
                   CONTENTS, READONLY, DEBUGGING
  10 .debug_frame  000000fc  00000000  00000000  00004c6c  2**2
                   CONTENTS, READONLY, DEBUGGING
@@ -134,8 +134,8 @@ void CheckCollision (void *data)
         else
             myrobot.obstacle = 0;                   /* signal no obstacle                */
 
-		OSTimeDlyHMSM(0, 0, 0, 100);                /* Task period ~ 100 ms              */
-      c4:	24 e6       	ldi	r18, 0x64	; 100
+		OSTimeDlyHMSM(0, 0, 0, 15);                /* Task period ~ 100 ms              */
+      c4:	2f e0       	ldi	r18, 0x0F	; 15
       c6:	30 e0       	ldi	r19, 0x00	; 0
       c8:	40 e0       	ldi	r20, 0x00	; 0
       ca:	60 e0       	ldi	r22, 0x00	; 0
@@ -168,8 +168,8 @@ void CheckCollision (void *data)
       e2:	80 91 d4 02 	lds	r24, 0x02D4	; 0x8002d4 <myrobot+0x2>
       e6:	90 91 d5 02 	lds	r25, 0x02D5	; 0x8002d5 <myrobot+0x3>
       ea:	0e 94 46 04 	call	0x88c	; 0x88c <robo_motorSpeed>
-        OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 250 ms              */
-      ee:	25 e0       	ldi	r18, 0x05	; 5
+        OSTimeDlyHMSM(0, 0, 0, 20);                /* Task period ~ 250 ms              */
+      ee:	24 e1       	ldi	r18, 0x14	; 20
       f0:	30 e0       	ldi	r19, 0x00	; 0
       f2:	40 e0       	ldi	r20, 0x00	; 0
       f4:	60 e0       	ldi	r22, 0x00	; 0
@@ -193,45 +193,45 @@ void TaskStart( void *data )
     OS_ticks_init();                                        /* enable RTOS timer tick        */
      10a:	0e 94 14 05 	call	0xa28	; 0xa28 <OS_ticks_init>
 
-    OSTaskCreate(CheckCollision,                            /* Task function                 */
+    OSTaskCreate(Navig,                                     /* Task function                 */
      10e:	22 e0       	ldi	r18, 0x02	; 2
-     110:	41 ed       	ldi	r20, 0xD1	; 209
-     112:	52 e0       	ldi	r21, 0x02	; 2
+     110:	4a e7       	ldi	r20, 0x7A	; 122
+     112:	54 e0       	ldi	r21, 0x04	; 4
      114:	70 e0       	ldi	r23, 0x00	; 0
      116:	60 e0       	ldi	r22, 0x00	; 0
-     118:	83 e5       	ldi	r24, 0x53	; 83
-     11a:	90 e0       	ldi	r25, 0x00	; 0
+     118:	8e e7       	ldi	r24, 0x7E	; 126
+     11a:	91 e0       	ldi	r25, 0x01	; 1
      11c:	0e 94 1c 09 	call	0x1238	; 0x1238 <OSTaskCreate>
+                (void *)0,                                  /* nothing passed to task        */
+                (void *)&NavigStk[TASK_STK_SZ - 1],         /* stack allocated to task       */
+                TASK_NAVIG_PRIO);                           /* priority of task              */
+
+    OSTaskCreate(CheckCollision,                            /* Task function                 */
+     120:	22 e0       	ldi	r18, 0x02	; 2
+     122:	41 ed       	ldi	r20, 0xD1	; 209
+     124:	52 e0       	ldi	r21, 0x02	; 2
+     126:	70 e0       	ldi	r23, 0x00	; 0
+     128:	60 e0       	ldi	r22, 0x00	; 0
+     12a:	83 e5       	ldi	r24, 0x53	; 83
+     12c:	90 e0       	ldi	r25, 0x00	; 0
+     12e:	0e 94 1c 09 	call	0x1238	; 0x1238 <OSTaskCreate>
                 (void *)0,                                  /* nothing passed to task        */
                 (void *)&ChkCollideStk[TASK_STK_SZ - 1],    /* stack allocated to task       */
                 TASK_CHKCOLLIDE_PRIO);                      /* priority of task              */
 
     OSTaskCreate(CntrlMotors,                               /* Task function                 */
-     120:	23 e0       	ldi	r18, 0x03	; 3
-     122:	4a e7       	ldi	r20, 0x7A	; 122
-     124:	53 e0       	ldi	r21, 0x03	; 3
-     126:	70 e0       	ldi	r23, 0x00	; 0
-     128:	60 e0       	ldi	r22, 0x00	; 0
-     12a:	8d e6       	ldi	r24, 0x6D	; 109
-     12c:	90 e0       	ldi	r25, 0x00	; 0
-     12e:	0e 94 1c 09 	call	0x1238	; 0x1238 <OSTaskCreate>
-                (void *)0,                                  /* nothing passed to task        */
-                (void *)&CtrlmotorStk[TASK_STK_SZ - 1],     /* stack allocated to task       */
-                TASK_CTRLMOTOR_PRIO);                       /* priority of task              */
-
-    OSTaskCreate(Navig,                                     /* Task function                 */
-     132:	24 e0       	ldi	r18, 0x04	; 4
+     132:	22 e0       	ldi	r18, 0x02	; 2
      134:	4a e7       	ldi	r20, 0x7A	; 122
-     136:	54 e0       	ldi	r21, 0x04	; 4
+     136:	53 e0       	ldi	r21, 0x03	; 3
      138:	70 e0       	ldi	r23, 0x00	; 0
      13a:	60 e0       	ldi	r22, 0x00	; 0
-     13c:	8e e7       	ldi	r24, 0x7E	; 126
-     13e:	91 e0       	ldi	r25, 0x01	; 1
+     13c:	8d e6       	ldi	r24, 0x6D	; 109
+     13e:	90 e0       	ldi	r25, 0x00	; 0
      140:	0e 94 1c 09 	call	0x1238	; 0x1238 <OSTaskCreate>
      144:	0f 90       	pop	r0
      146:	0f 90       	pop	r0
-                (void *)&NavigStk[TASK_STK_SZ - 1],         /* stack allocated to task       */
-                TASK_NAVIG_PRIO);                           /* priority of task              */
+
+
 
     while(1)
     {
@@ -681,7 +681,7 @@ void Navig (void *data)
 
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 500 ms                  */
+            OSTimeDlyHMSM(0, 0, 0, 25);                /* Task period ~ 500 ms                  */
      428:	60 e0       	ldi	r22, 0x00	; 0
      42a:	80 e0       	ldi	r24, 0x00	; 0
      42c:	0e 94 6d 0a 	call	0x14da	; 0x14da <OSTimeDlyHMSM>
@@ -806,8 +806,8 @@ void Navig (void *data)
 
             }
 
-            OSTimeDlyHMSM(0, 0, 0, 5);                /* Task period ~ 500 ms                  */
-     4f4:	25 e0       	ldi	r18, 0x05	; 5
+            OSTimeDlyHMSM(0, 0, 0, 25);                /* Task period ~ 500 ms                  */
+     4f4:	29 e1       	ldi	r18, 0x19	; 25
      4f6:	30 e0       	ldi	r19, 0x00	; 0
      4f8:	40 e0       	ldi	r20, 0x00	; 0
      4fa:	96 cf       	rjmp	.-212    	; 0x428 <__FUSE_REGION_LENGTH__+0x28>

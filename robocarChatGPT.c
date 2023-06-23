@@ -216,7 +216,7 @@ void Navig (void *data)
             myrobot.inRoundabout = 0;
             myrobot.lspeed = 30;
             myrobot.rspeed = -30;
-            OSTimeDlyHMSM(0, 0, 0, 800); // TUNE HERE
+            OSTimeDlyHMSM(0, 0, 0, 500); // TUNE HERE
 
             myrobot.lspeed = 60;
             myrobot.rspeed = 60;
@@ -231,7 +231,7 @@ void Navig (void *data)
 
             myrobot.lspeed = -65;
             myrobot.rspeed = 65;
-            OSTimeDlyHMSM(0, 0, 0, 200); // TUNE HERE
+            OSTimeDlyHMSM(0, 0, 0, 400); // TUNE HERE  200
         } else {
 
             int sense = myrobot.goal;
